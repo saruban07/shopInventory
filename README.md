@@ -27,7 +27,7 @@ The frontend runs at `http://localhost:5173` and proxies `/api` to the backend.
 For a deployed frontend, set this Vercel environment variable:
 
 ```env
-VITE_API_BASE_URL=https://your-backend-domain.com/api
+VITE_API_BASE_URL=https://shop-inventory-gamma.vercel.app/api
 ```
 
 For a deployed backend, set these backend environment variables:
