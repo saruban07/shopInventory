@@ -1,20 +1,6 @@
 {
   "users": [
     {
-      "id": "bc837ce7-0162-4470-b31a-a71fabac4e08",
-      "email": "test@example.com",
-      "passwordHash": "$2a$10$6V4s/2jTajQD4kDf8/aTieLN90hPjo/Q/3PoBGaT9H40GIsdu5d7a",
-      "products": [],
-      "sales": []
-    },
-    {
-      "id": "c85e468c-3154-4b95-a41e-3d55ce5fe913",
-      "email": "browser-test@example.com",
-      "passwordHash": "$2a$10$Xa0mGO1r4Rcx6A7.QAAEMuzjS08IyRBl.7aUw.dWHuA0Kg4CDcC/a",
-      "products": [],
-      "sales": []
-    },
-    {
       "id": "532c5092-873d-422a-a730-41c2fae601c3",
       "email": "saruban.v2023ece@sece.ac.in",
       "passwordHash": "$2a$10$mcZyIZLRQnbAlzxw5wKTaOSIRoszJMYlEVlPOojQQUltIJ8/3b3MS",
@@ -47,8 +33,5 @@
       ]
     }
   ],
-  "sessions": {
-    "413fe90c-b387-4546-9f86-c44c30fdaeb1": "bc837ce7-0162-4470-b31a-a71fabac4e08",
-    "643c43a7-d9cd-4a4d-a1d3-a78b1fbe7867": "c85e468c-3154-4b95-a41e-3d55ce5fe913"
-  }
+  "sessions": {}
 }

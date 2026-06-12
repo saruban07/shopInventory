@@ -2,16 +2,21 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'db.json');
+const MONGO_URI = process.env.MONGO_URI;
 const SESSION_COOKIE = 'shop_session';
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
   .split(',')
@@ -39,12 +44,60 @@ app.use(cors({
   credentials: true,
 }));
 
+const databaseSchema = new mongoose.Schema({
+  key: { type: String, required: true, unique: true },
+  users: { type: Array, default: [] },
+  sessions: { type: Object, default: {} },
+}, { minimize: false });
+
+const Database = mongoose.models.Database || mongoose.model('Database', databaseSchema);
+let mongoReady = false;
+
+const defaultDb = () => ({ users: [], sessions: {} });
+
+const connectMongo = async () => {
+  if (!MONGO_URI) {
+    console.log('MONGO_URI not set. Using local db.json storage.');
+    return;
+  }
+
+  try {
+    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+    mongoReady = true;
+    console.log('MongoDB connected');
+  } catch (error) {
+    console.error('MongoDB connection failed. Using local db.json storage.');
+    console.error(error.message);
+  }
+};
+
 const readDb = async () => {
+  if (mongoReady) {
+    const data = await Database.findOneAndUpdate(
+      { key: 'main' },
+      { $setOnInsert: defaultDb() },
+      { new: true, upsert: true, lean: true }
+    );
+    return {
+      users: data.users || [],
+      sessions: data.sessions || {},
+    };
+  }
+
   const content = await fs.readFile(DB_FILE, 'utf8');
   return JSON.parse(content);
 };
 
 const writeDb = async (data) => {
+  if (mongoReady) {
+    await Database.updateOne(
+      { key: 'main' },
+      { $set: { users: data.users || [], sessions: data.sessions || {} } },
+      { upsert: true }
+    );
+    return;
+  }
+
   await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
 };
 
@@ -271,6 +324,8 @@ app.post('/api/deletesales', requireUser, async (req, res) => {
   await writeDb(db);
   res.json({ status: true, message: 'Sale deleted' });
 });
+
+await connectMongo();
 
 const server = app.listen(PORT, () => {
   console.log(`Backend running at http://localhost:${PORT}`);
