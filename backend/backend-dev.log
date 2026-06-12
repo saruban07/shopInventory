@@ -1,0 +1,5 @@
+
+> shop-inventory-backend@0.1.0 start
+> node server.js
+
+Backend running at http://localhost:8000
