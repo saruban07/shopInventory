@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'db.json');
 const MONGO_URI = process.env.MONGO_URI;
 const SESSION_COOKIE = 'shop_session';
-const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'https://shop-inventory-gamma.vercel.app')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
