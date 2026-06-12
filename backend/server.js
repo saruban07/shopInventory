@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'db.json');
 const MONGO_URI = process.env.MONGO_URI;
 const SESSION_COOKIE = 'shop_session';
-const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'https://shop-inventory-gamma.vercel.app')
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'https://shop-inventory-gamma.vercel.app,http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
@@ -32,9 +32,7 @@ const isLocalDevOrigin = (origin) => {
   }
 };
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors({
+const corsOptions = {
   origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin) || isLocalDevOrigin(origin)) {
       return callback(null, true);
@@ -42,7 +40,19 @@ app.use(cors({
     return callback(new Error(`CORS blocked origin: ${origin}`));
   },
   credentials: true,
-}));
+};
+
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+app.use((err, req, res, next) => {
+  if (err) {
+    return res.status(500).json({ status: false, message: err.message });
+  }
+  next();
+});
 
 const databaseSchema = new mongoose.Schema({
   key: { type: String, required: true, unique: true },
@@ -84,8 +94,17 @@ const readDb = async () => {
     };
   }
 
-  const content = await fs.readFile(DB_FILE, 'utf8');
-  return JSON.parse(content);
+  try {
+    const content = await fs.readFile(DB_FILE, 'utf8');
+    return JSON.parse(content);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      const data = defaultDb();
+      await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+      return data;
+    }
+    throw error;
+  }
 };
 
 const writeDb = async (data) => {
